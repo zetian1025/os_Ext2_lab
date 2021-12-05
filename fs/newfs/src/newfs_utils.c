@@ -78,17 +78,17 @@ void root_dentry_init()
     memcpy(buf, &root_inode, sizeof(struct newfs_inode));
 
     blk_write(super.fd, INODE_BLK_OFFSET, 1, buf);
-    map_inode[0] |= (1 << 0);
+    super.map_inode[0] |= (1 << 0);
 }
 
 int newfs_alloc_inode(FILE_TYPE type) {
     int offset = 0;
     int is_find_free_entry = 0;
 
-    for (int i=0; i<MAX_INODE_SIZE/CHAR; i++) {
+    for (int i=0; i<super.max_ino/CHAR; i++) {
         for (int j=0; j<CHAR; j++) {
-            if ((map_inode[i] & (0x1 << j)) == 0) {
-                map_inode[i] |= (0x1 << j);
+            if ((super.map_inode[i] & (0x1 << j)) == 0) {
+                super.map_inode[i] |= (0x1 << j);
                 is_find_free_entry = 1;
                 break;
             }
@@ -99,7 +99,7 @@ int newfs_alloc_inode(FILE_TYPE type) {
         }
     }
 
-    if (!is_find_free_entry || offset == MAX_INODE_SIZE) {
+    if (!is_find_free_entry || offset == super.max_ino) {
         return 0;
     }
 
@@ -183,10 +183,10 @@ int newfs_alloc_data()
     char buf[2 * BLK_SIZE] = {0};
     int offset = 0;
     int is_find_free_entry = 0;
-    for (int i=0; i<MAX_INODE_SIZE/CHAR; i++) {
+    for (int i=0; i<super.max_ino/CHAR; i++) {
         for (int j=0; j<CHAR; j++) {
-            if ((map_data[i] & (0x1 << j)) == 0) {
-                map_data[i] |= (0x1 << j);
+            if ((super.map_data[i] & (0x1 << j)) == 0) {
+                super.map_data[i] |= (0x1 << j);
                 is_find_free_entry = 1;
                 break;
             }
@@ -197,11 +197,11 @@ int newfs_alloc_data()
         }
     }
 
-    if (!is_find_free_entry || offset == MAX_DATA_SIZE) {
+    if (!is_find_free_entry || offset == super.max_data) {
         return -1;
     }
-    blk_write(super.fd, DATA_START_OFF + offset*2, 2, buf);
-    return DATA_START_OFF + offset * 2;
+    blk_write(super.fd, super.blks_data_offset + offset*2, 2, buf);
+    return super.blks_data_offset + offset * 2;
 }
 
 int newfs_alloc_dentry(char *name, int ino, FILE_TYPE type, struct newfs_inode *inode)

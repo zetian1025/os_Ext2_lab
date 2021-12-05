@@ -8,13 +8,11 @@
 
 #define FILE_MAX        20     //max file nums
 
-#define INODE_BLK_NUM   100      //nums of inode blk
 #define INODE_BLK_OFFSET 3
 #define MAX_INODE_SIZE  108     //len of map_inode
 
-#define DATA_START_OFF  3 + INODE_BLK_NUM    //data start blk
+#define DATA_START_OFF  3 + MAX_INODE_SIZE    //data start blk
 #define MAX_DATA_SIZE    FILE_MAX * 12 + 10     // max num of data_blk
-#define MAP_DATA_SIZE   108      //len of map_inode
 
 #define MAX_DENTRYS     6
 
@@ -26,20 +24,12 @@ struct newfs_super {
     
     uint32_t magic;
     int      fd;
-
     int max_file;        //max num of file
-
-    int map_inode_blks;        //max num of inode bmap blks
-    int map_inode_offset;     //offset of inode map
-
     int max_ino;        // max num of inode
-
-    int map_data_blks;  //max numb of map_data
-    int map_data_offset;  //offset of map_data
-
     int max_data;       //numbers of data blk
+    char* map_inode;
+    char* map_data;
     int blks_data_offset;       //offset of data
-
 };
 
 typedef enum file_type{

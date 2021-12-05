@@ -59,30 +59,22 @@ void* newfs_init(struct fuse_conn_info * conn_info) {
 	if(super.max_file == 0) {
 		super.magic = NEWFS_MAGIC;
 		super.fd = fd;
-
 		super.max_file = FILE_MAX;
-
-		super.map_inode_blks = 1;
-		super.map_inode_offset = 1 * BLK_SIZE;
-
 		super.max_ino = MAX_INODE_SIZE;
-
-		super.map_data_blks = 1;
-		super.map_data_offset = 2 * BLK_SIZE;
-
 		super.max_data = MAX_DATA_SIZE;
 		super.blks_data_offset = DATA_START_OFF;
-
-		memset(map_inode, 0, sizeof(map_inode));
-		memset(map_data, 0, sizeof(map_data));
+		super.map_inode = (char*)malloc(sizeof(char) * super.max_ino/CHAR);
+		super.map_data = (char*)malloc(sizeof(char) * super.max_data/CHAR);
+		memset(super.map_inode, 0, sizeof(char) * super.max_ino/CHAR);
+		memset(super.map_data, 0, sizeof(char) * super.max_data/CHAR);
 		root_dentry_init();
 	}
 	else {
 		if(super.magic != NEWFS_MAGIC) {
 			exit(1);
 		}
-		blk_read(fd, 1, 1, map_inode);
-		blk_read(fd, 2, 1, map_data);
+		blk_read(fd, 1, 1, super.map_inode);
+		blk_read(fd, 2, 1, super.map_data);
 	}
 	return NULL;
 }
@@ -97,8 +89,8 @@ void newfs_destroy(void* p) {
 	char buf[BLK_SIZE] = {0};
 	memcpy(buf, &super, sizeof(struct newfs_super));
 	blk_write(super.fd, 0, 1, buf);
-	blk_write(super.fd, 1, 1, map_inode);
-	blk_write(super.fd, 2, 1, map_data);
+	blk_write(super.fd, 1, 1, super.map_inode);
+	blk_write(super.fd, 2, 1, super.map_data);
 	ddriver_close(super.fd);
 	return;
 }
