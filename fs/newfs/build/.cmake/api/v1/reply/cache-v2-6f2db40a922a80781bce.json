@@ -55,7 +55,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/guests/190110715/user-land-filesystem/fs/newfs/build"
+			"value" : "/home/guests/190110715/os_Ext2_lab/fs/newfs/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -479,7 +479,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/guests/190110715/user-land-filesystem/fs/newfs"
+			"value" : "/home/guests/190110715/os_Ext2_lab/fs/newfs"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1119,7 +1119,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/guests/190110715/user-land-filesystem/fs/newfs/build"
+			"value" : "/home/guests/190110715/os_Ext2_lab/fs/newfs/build"
 		},
 		{
 			"name" : "newfs_SOURCE_DIR",
@@ -1131,7 +1131,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/guests/190110715/user-land-filesystem/fs/newfs"
+			"value" : "/home/guests/190110715/os_Ext2_lab/fs/newfs"
 		}
 	],
 	"kind" : "cache",

@@ -6,10 +6,10 @@ CMakeFiles/newfs.dir/src/newfs.c.o
  ../include/ddriver_ctl_user.h
  ../include/newfs.h
  ../include/types.h
- /home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs.c
+ /home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs.c
 CMakeFiles/newfs.dir/src/newfs_utils.c.o
  ../include/ddriver.h
  ../include/ddriver_ctl_user.h
  ../include/newfs.h
  ../include/types.h
- /home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs_utils.c
+ /home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs_utils.c

@@ -6,5 +6,5 @@ C_FLAGS =  -D_FILE_OFFSET_BITS=64 -no-pie -g -Wall --pedantic -g
 
 C_DEFINES = 
 
-C_INCLUDES = -I/home/guests/190110715/user-land-filesystem/fs/newfs/./include 
+C_INCLUDES = -I/home/guests/190110715/os_Ext2_lab/fs/newfs/./include 
 

@@ -40,11 +40,11 @@ types.h
 
 ../include/types.h
 
-/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs.c
+/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs.c
 newfs.h
-/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs.h
+/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs.h
 
-/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs_utils.c
+/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs_utils.c
 newfs.h
-/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs.h
+/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs.h
 

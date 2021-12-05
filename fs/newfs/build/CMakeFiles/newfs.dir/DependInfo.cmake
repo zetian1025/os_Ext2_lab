@@ -4,8 +4,8 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
-  "/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs.c" "/home/guests/190110715/user-land-filesystem/fs/newfs/build/CMakeFiles/newfs.dir/src/newfs.c.o"
-  "/home/guests/190110715/user-land-filesystem/fs/newfs/src/newfs_utils.c" "/home/guests/190110715/user-land-filesystem/fs/newfs/build/CMakeFiles/newfs.dir/src/newfs_utils.c.o"
+  "/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs.c" "/home/guests/190110715/os_Ext2_lab/fs/newfs/build/CMakeFiles/newfs.dir/src/newfs.c.o"
+  "/home/guests/190110715/os_Ext2_lab/fs/newfs/src/newfs_utils.c" "/home/guests/190110715/os_Ext2_lab/fs/newfs/build/CMakeFiles/newfs.dir/src/newfs_utils.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

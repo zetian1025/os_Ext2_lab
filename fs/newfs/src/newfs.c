@@ -120,7 +120,6 @@ int newfs_mkdir(const char* path, mode_t mode) {
 	}
 	free(ret);
 	return 0;
-	/* TODO: 解析路径，创建目录 */
 }
  
 /**

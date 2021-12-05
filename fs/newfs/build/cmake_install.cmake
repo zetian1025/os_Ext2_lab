@@ -1,4 +1,4 @@
-# Install script for directory: /home/guests/190110715/user-land-filesystem/fs/newfs
+# Install script for directory: /home/guests/190110715/os_Ext2_lab/fs/newfs
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/guests/190110715/user-land-filesystem/fs/newfs/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/guests/190110715/os_Ext2_lab/fs/newfs/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

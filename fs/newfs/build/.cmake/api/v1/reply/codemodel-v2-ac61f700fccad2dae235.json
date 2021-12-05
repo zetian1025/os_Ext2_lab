@@ -38,7 +38,7 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "newfs::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-newfs-Debug-c96a75906a5b9c117876.json",
+					"jsonFile" : "target-newfs-Debug-6f5b61caf98f7a6bc9af.json",
 					"name" : "newfs",
 					"projectIndex" : 0
 				}
@@ -48,8 +48,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/guests/190110715/user-land-filesystem/fs/newfs/build",
-		"source" : "/home/guests/190110715/user-land-filesystem/fs/newfs"
+		"build" : "/home/guests/190110715/os_Ext2_lab/fs/newfs/build",
+		"source" : "/home/guests/190110715/os_Ext2_lab/fs/newfs"
 	},
 	"version" : 
 	{

@@ -7,29 +7,6 @@ void newfs_copy_dentry(struct newfs_dentry *dentry, char *name, int ino, FILE_TY
     dentry->valid = 1;
 }
 
-void newfs_get_dentrys(struct newfs_inode *inode) {
-    if (inode->type == REG) {
-        return;
-    }
-    char buf[2 * BLK_SIZE];
-    int cnt = 0;
-    struct newfs_dentry *dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
-    for(int i = 0; i < 6; ++i) {
-        if(inode->blk_pointer[i] > 0) {
-            blk_read(super.fd, inode->blk_pointer[i], 2, buf);
-            for(int j = 0; j < (2 * BLK_SIZE) / sizeof(struct newfs_dentry) && cnt; j++) {
-                memcpy(dentry, buf + j * sizeof(struct newfs_dentry), sizeof(struct newfs_dentry));
-                if(dentry->valid) {
-                    inode->dentrys[cnt] = *dentry;
-                    cnt++;
-                }
-            }
-        }
-    }
-    inode->dir_cnt = cnt;
-    free(dentry);
-}
-
 int blk_read(int fd, int blk, int nums, char *buf)
 {
     if(nums == 0) return 0;
@@ -46,7 +23,7 @@ int blk_read(int fd, int blk, int nums, char *buf)
             printf("read error!\n");
             exit(1);
         }
-        buf += 512;
+        buf += BLK_SIZE;
         ++ret;
     }
     return ret;
@@ -68,7 +45,7 @@ int blk_write(int fd, int blk, int nums, char *buf)
             printf("read error!\n");
             exit(1);
         }
-        buf += 512;
+        buf += BLK_SIZE;
         ++ret;      
     }
     return ret;
