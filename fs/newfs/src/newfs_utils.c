@@ -1,10 +1,18 @@
 #include "newfs.h"
 
 void newfs_copy_dentry(struct newfs_dentry *dentry, char *name, int ino, FILE_TYPE ftype) {
+    memset(dentry->name, 0, 10);
     strcpy(dentry->name, name);
     dentry->ino = ino;
     dentry->type = ftype;
     dentry->valid = 1;
+}
+
+void newfs_get_fname(char *fname, const char* path) {
+    char ch = '/';
+    char *q = strrchr(path, ch);
+    *q = 0;
+    strcpy(fname, ++q);
 }
 
 int blk_read(int fd, int blk, int nums, char *buf)
@@ -18,7 +26,7 @@ int blk_read(int fd, int blk, int nums, char *buf)
             printf("seek error!\n");
             exit(1);
         }
-        if(ddriver_read(fd, buf, 512) == 0)
+        if(ddriver_read(fd, buf, BLK_SIZE) == 0)
         {
             printf("read error!\n");
             exit(1);
@@ -40,7 +48,7 @@ int blk_write(int fd, int blk, int nums, char *buf)
             printf("error: seek error!\n");
             exit(1);
         }
-        if(ddriver_write(fd, buf, 512) == 0)
+        if(ddriver_write(fd, buf, BLK_SIZE) == 0)
         {
             printf("read error!\n");
             exit(1);
@@ -67,14 +75,14 @@ int newfs_calc_lvl(const char *path)
     return lvl;
 }
 
-void root_dentry_init()
+void root_init()
 {
     struct newfs_inode root_inode;
     memset(&root_inode, 0, sizeof(struct newfs_inode));
     root_inode.ino = INODE_BLK_OFFSET;
     root_inode.size = 1;
     root_inode.type = DIR;
-    char buf[512];
+    char buf[BLK_SIZE];
     memcpy(buf, &root_inode, sizeof(struct newfs_inode));
 
     blk_write(super.fd, INODE_BLK_OFFSET, 1, buf);
@@ -103,79 +111,14 @@ int newfs_alloc_inode(FILE_TYPE type) {
         return 0;
     }
 
-    struct newfs_inode *ino = (struct newfs_inode *)malloc(sizeof(struct newfs_inode));
-    memset((void *)ino, 0, sizeof(struct newfs_inode));
-    ino->ino = INODE_BLK_OFFSET + offset;
-    ino->size = 0;
-    ino->type = type;
-    char buf[512];
-    memset(buf, 0, BLK_SIZE);
-    memcpy(buf, ino, sizeof(struct newfs_inode));
+    struct newfs_inode ino = {0};
+    char buf[BLK_SIZE] = {0};
+    ino.ino = INODE_BLK_OFFSET + offset;
+    ino.size = 0;
+    ino.type = type;
+    memcpy(buf, &ino, sizeof(struct newfs_inode));
     blk_write(super.fd, INODE_BLK_OFFSET + offset, 1, buf);
-    free(ino);
     return INODE_BLK_OFFSET + offset;
-}
-
-struct newfs_dentry *newfs_get_dentry(struct newfs_inode *inode, const char *fname, FILE_TYPE type, int mode)
-{
-    struct newfs_dentry *dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
-    int cnt = inode->dir_cnt;
-    while (cnt > 0) {
-        memcpy(dentry, (struct newfs_dentry*)&inode->dentrys[--cnt], sizeof(struct newfs_dentry));
-        if (!strcmp(dentry->name, fname) && (dentry->type == type || !mode)) {
-            return dentry;
-        }
-    }
-    free(dentry);
-    return 0;
-}
-
-struct newfs_dentry *newfs_lookup(const char *_path, mode_t mode)
-{
-    char path[2 * BLK_SIZE];
-    strcpy(path, _path);
-    int lvl = newfs_calc_lvl(_path);
-    char buf[BLK_SIZE];
-    blk_read(super.fd, INODE_BLK_OFFSET, 1, buf);
-
-    struct newfs_inode cur_inode;
-    struct newfs_dentry *cur_dentry = NULL;
-    memcpy(&cur_inode, buf, sizeof(struct newfs_inode));
-    char *fname = NULL;
-    fname = strtok(path, "/");
-    while(fname) {
-        lvl--;
-        cur_dentry = newfs_get_dentry(&cur_inode, fname, DIR, mode);
-        if(!cur_dentry) {
-            if(!mode) {
-                break;
-            }
-            else {
-                cur_dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
-                int dir_ino = newfs_alloc_inode(DIR);
-                if(dir_ino == 0 || newfs_alloc_dentry(fname, dir_ino, DIR, &cur_inode)) {
-                    return 0;
-                }
-                newfs_copy_dentry(cur_dentry, fname, dir_ino, DIR);
-                memcpy(buf, &cur_inode, sizeof(struct newfs_inode));
-                blk_write(super.fd, cur_inode.ino, 1, buf);
-            }
-        }
-        if(lvl == 0) {
-            return cur_dentry;
-        }
-        else if(cur_dentry->type == DIR) {
-            blk_read(super.fd, cur_dentry->ino, 1, buf);
-            memcpy(&cur_inode, buf, sizeof(struct newfs_inode));
-            fname = strtok(NULL, "/");
-            free(cur_dentry);
-        }
-        else {
-            free(cur_dentry);
-            break;
-        }
-    }
-    return 0;
 }
 
 int newfs_alloc_data()
@@ -228,19 +171,84 @@ int newfs_alloc_dentry(char *name, int ino, FILE_TYPE type, struct newfs_inode *
     return -1;
 }
 
-struct newfs_dentry *newfs_dir_dentry(int ino, off_t off)
+struct newfs_dentry *newfs_get_dentry(struct newfs_inode *inode, const char *fname, FILE_TYPE type, int mode)
 {
     struct newfs_dentry *dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
-    char buf[2 * BLK_SIZE];
+    int cnt = inode->dir_cnt;
+    if (inode->type == REG) {
+        return 0;
+    }
+    while (cnt > 0) {
+        memcpy(dentry, (struct newfs_dentry*)&inode->dentrys[--cnt], sizeof(struct newfs_dentry));
+        if (!strcmp(dentry->name, fname) && (dentry->type == type || !mode)) {
+            return dentry;
+        }
+    }
+    free(dentry);
+    return 0;
+}
+
+struct newfs_dentry *newfs_dir_dentry(int ino, off_t off)
+{
+    char buf[BLK_SIZE];
     struct newfs_inode inode;
     blk_read(super.fd, ino, 1, buf);
     memcpy(&inode, buf, sizeof(struct newfs_inode));
 
     if(inode.type == REG || off >= inode.dir_cnt) {
-        free(dentry);
         return 0;
     }
 
+    struct newfs_dentry *dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
     memcpy(dentry, (struct newfs_dentry*)&inode.dentrys[off], sizeof(struct newfs_dentry));
     return dentry;
+}
+
+struct newfs_dentry *newfs_lookup(const char *_path, mode_t mode)
+{
+    char path[BLK_SIZE] = {0};
+    char buf[BLK_SIZE] = {0};
+    struct newfs_inode cur_inode;
+    struct newfs_dentry *cur_dentry = NULL;
+    int total_lvl = newfs_calc_lvl(_path);
+    int lvl = 0;
+    char *fname = NULL;
+
+    strcpy(path, _path);
+    blk_read(super.fd, INODE_BLK_OFFSET, 1, buf);
+    memcpy(&cur_inode, buf, sizeof(struct newfs_inode));
+    fname = strtok(path, "/");
+    while(fname) {
+        lvl++;
+        cur_dentry = newfs_get_dentry(&cur_inode, fname, DIR, mode);
+        if(!cur_dentry) {
+            if(!mode) {
+                break;
+            }
+            else {
+                cur_dentry = (struct newfs_dentry *)malloc(sizeof(struct newfs_dentry));
+                int dir_ino = newfs_alloc_inode(DIR);
+                if(dir_ino == 0 || newfs_alloc_dentry(fname, dir_ino, DIR, &cur_inode)) {
+                    return 0;
+                }
+                newfs_copy_dentry(cur_dentry, fname, dir_ino, DIR);
+                memcpy(buf, &cur_inode, sizeof(struct newfs_inode));
+                blk_write(super.fd, cur_inode.ino, 1, buf);
+            }
+        }
+        if(lvl == total_lvl) {
+            return cur_dentry;
+        }
+        else if(cur_dentry->type == DIR) {
+            blk_read(super.fd, cur_dentry->ino, 1, buf);
+            memcpy(&cur_inode, buf, sizeof(struct newfs_inode));
+            fname = strtok(NULL, "/");
+            free(cur_dentry);
+        }
+        else {
+            free(cur_dentry);
+            break;
+        }
+    }
+    return 0;
 }

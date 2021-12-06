@@ -46,7 +46,7 @@ int   			   newfs_opendir(const char *, struct fuse_file_info *);
 int blk_read(int fd, int blk, int nums, char *buf);
 int blk_write(int fd, int blk, int nums, char *buf);
 
-void root_dentry_init();
+void root_init();
 
 void newfs_copy_dentry(struct newfs_dentry *dentry, char *name, int ino, FILE_TYPE ftype);
 
@@ -63,5 +63,7 @@ int newfs_alloc_dentry(char *name, int ino, FILE_TYPE type, struct newfs_inode *
 int newfs_alloc_data();
 
 struct newfs_dentry *newfs_dir_dentry(int ino, off_t off);
+
+void newfs_get_fname(char *fname, const char* path);
 
 #endif  /* _newfs_H_ */

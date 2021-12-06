@@ -56,23 +56,25 @@ void* newfs_init(struct fuse_conn_info * conn_info) {
 	blk_read(fd, 0, 1, buf);
 	memcpy(&super, buf, sizeof(struct newfs_super));
 	
-	if(super.max_file == 0) {
+	if(super.is_init == 0) {
 		super.magic = NEWFS_MAGIC;
 		super.fd = fd;
-		super.max_file = FILE_MAX;
+		super.is_init = 1;
 		super.max_ino = MAX_INODE_SIZE;
 		super.max_data = MAX_DATA_SIZE;
 		super.blks_data_offset = DATA_START_OFF;
-		super.map_inode = (char*)malloc(sizeof(char) * super.max_ino/CHAR);
-		super.map_data = (char*)malloc(sizeof(char) * super.max_data/CHAR);
-		memset(super.map_inode, 0, sizeof(char) * super.max_ino/CHAR);
-		memset(super.map_data, 0, sizeof(char) * super.max_data/CHAR);
-		root_dentry_init();
+		super.map_inode = (char*)malloc(BLK_SIZE);
+		super.map_data = (char*)malloc(BLK_SIZE);
+		memset(super.map_inode, 0, BLK_SIZE);
+		memset(super.map_data, 0, BLK_SIZE);
+		root_init();
 	}
 	else {
 		if(super.magic != NEWFS_MAGIC) {
 			exit(1);
 		}
+		super.map_inode = (char*)malloc(BLK_SIZE);
+		super.map_data = (char*)malloc(BLK_SIZE);
 		blk_read(fd, 1, 1, super.map_inode);
 		blk_read(fd, 2, 1, super.map_data);
 	}
@@ -216,27 +218,23 @@ int newfs_readdir(const char * path, void * buf, fuse_fill_dir_t filler, off_t o
  * @return int 0成功，否则失败
  */
 int newfs_mknod(const char* path, mode_t mode, dev_t dev) {
-
-	char cpath[1024];
+	char buf[BLK_SIZE] = {0};
 	char fname[MAX_NAME_LEN];
-	strcpy(cpath, path);
-	char *pi = strrchr(cpath, '/');
-	*pi = 0;
-	++pi;
-	strcpy(fname, pi);
+	strcpy(buf, path);
+	newfs_get_fname(fname, buf);
 	
 	uint64_t ino = newfs_alloc_inode(REG);
 	if(!ino) {
 		return -1;
 	}
+
 	uint64_t dentry_ino = 0;
-	if(pi == cpath + 1) {
+	if(!strcmp(fname, path+1)) {
 		dentry_ino = INODE_BLK_OFFSET;
 	}
 	else {
-		struct newfs_dentry *dentry = newfs_lookup(cpath, 0);
-		if(dentry == 0 || dentry->type == REG)
-		{
+		struct newfs_dentry *dentry = newfs_lookup(buf, 0);
+		if(dentry == 0 || dentry->type == REG) {
 			free(dentry);
 			return -1;
 		}
@@ -244,15 +242,15 @@ int newfs_mknod(const char* path, mode_t mode, dev_t dev) {
 		free(dentry);
 	}
 
-	blk_read(super.fd, dentry_ino, 1, cpath);
+	blk_read(super.fd, dentry_ino, 1, buf);
 	struct newfs_inode inode;
-	memcpy(&inode, cpath, sizeof(struct newfs_inode));
+	memcpy(&inode, buf, sizeof(struct newfs_inode));
 
 	if(newfs_alloc_dentry(fname, ino, REG, &inode)) {
 		return -1;
 	}
-	memcpy(cpath, &inode, sizeof(struct newfs_inode));
-	blk_write(super.fd, dentry_ino, 1, cpath);
+	memcpy(buf, &inode, sizeof(struct newfs_inode));
+	blk_write(super.fd, dentry_ino, 1, buf);
 	return 0;
 }
 
